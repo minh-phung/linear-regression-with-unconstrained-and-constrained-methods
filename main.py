@@ -32,6 +32,6 @@ print(data.columns)
 # compute coefficient for each method, compare them with table from page 82
 
 # compute effective degrees of freedom (page 252)
-# plot train error, validate error, test error, aic as function of effective dof
+# plot train error, test error, aic as function of effective dof
 
 # bootstrap?
