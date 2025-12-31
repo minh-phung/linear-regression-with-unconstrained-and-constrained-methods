@@ -16,13 +16,15 @@ print(data.shape)
 for i in range(data.shape[0]):
     each = data.loc[i, "Date - datetime"].month
     if each <= 3:
-        data.loc[i, "Quarter"] = "1st"
+        out = "1st"
     elif each <= 6:
-        data.loc[i, "Quarter"] = "2st"
+        out = "2st"
     elif each <= 9:
-        data.loc[i, "Quarter"] = "3st"
+        out = "3st"
     else :
-        data.loc[i, "Quarter"] = "4th"
+        out = "4th"
+    data.loc[i, "Quarter"] = out
+
 
 print(data.head())
 print(data.columns)
