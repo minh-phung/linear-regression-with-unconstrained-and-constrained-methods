@@ -35,30 +35,39 @@ predictor = ['Holiday_Flag', 'Temperature', 'Fuel_Price', 'CPI','Unemployment', 
 target    = ['Weekly_Sales']
 
 print("---------------------------------------------")
+
+# #----------------------------------------------------------------------------------------------------------
+# k-fold validation - equal stratum for categorical predictors (holiday flag, quarter)
+
+
+
+# #----------------------------------------------------------------------------------------------------------
+# for each k-fold
+# method(train_predict, train_target, test_predict, test_target)
+
+# least_squared
+# return(dof, test_error, coefficient)
+# row - dof: 1
+
+# all_subset
+# return(dof, test_error, coefficient)
+# row - dof: 1, 2, .., num(predictor)
+
+# ridge, lasso
+# return(dof, test_error, coefficient)
+# row - dof: discrete dof (step size tbd) (continuous?)
+
+# pcr
+# return(dof, test_error, coefficient)
+# row - dof: 1, 2, .., num(predictor)
+
+
 #----------------------------------------------------------------------------------------------------------
-
-linear_regression_data = pd.DataFrame(index = range(n), columns = predictor)
-
-# ---------------------------------------------------------------------------
-# k-fold validation instead (?)
-
-# 75, 25 split for data for train, test
-index_list = range(data.shape[0])
-frac = int(0.75 * len(index_list))
-
-train_index = np.array(random.sample(index_list, frac))
-test_index = np.delete(index_list, train_index)
-
-print(train_index, test_index)
-# ---------------------------------------------------------------------------
-# compute coefficient for each method
-# method(train_index, test_index, predictor, target)
-# return(coefficient, train_error, test_error, dof)
-# effective dof page 252
+# match by dof, avg test_error - cv_error, avg_coef
+# compare them with table from page 82 - least dof within 1 sd of minimum per method (all except least_squared)
 
 
-#----------------------------------------------------------------------------------------------------------
-# compare them with table from page 82
-# train_error, test_error comparison
+# plot dof vs cv_error for all method (with the chosen dof for each method)
+# select best model also by using least dof within 1 sd of minimum
 
 
