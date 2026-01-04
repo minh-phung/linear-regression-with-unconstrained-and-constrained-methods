@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
 import method
-import random
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 
 data = pd.read_csv("Walmart_Sales.csv").dropna()
@@ -11,33 +14,58 @@ data["Date - datetime"] = pd.to_datetime(data["Date"], format="%d-%m-%Y")
 data.drop("Date", axis=1, inplace=True)
 
 data["Quarter"] = ['']*data.shape[0]
-print(data.shape)
+data['Quarter 1'] = np.zeros(data.shape[0])
+data['Quarter 2'] = np.zeros(data.shape[0])
+data['Quarter 3'] = np.zeros(data.shape[0])
+data['Quarter 4'] = np.zeros(data.shape[0])
 
+print(data.shape)
 
 for i in range(data.shape[0]):
     each = data.loc[i, "Date - datetime"].month
     out = ""
     if each <= 3:
         out = "1st"
+        data.loc[i,'Quarter 1'] = 1
     elif each <= 6:
         out = "2st"
+        data.loc[i,'Quarter 2'] = 1
     elif each <= 9:
         out = "3st"
+        data.loc[i,'Quarter 3'] = 1
     else :
         out = "4th"
+        data.loc[i,'Quarter 4'] = 1
     data.loc[i, "Quarter"] = out
 
+data['Intercept'] = np.ones(data.shape[0])
 
 print(data.head())
 print(data.columns)
 
-predictor = ['Holiday_Flag', 'Temperature', 'Fuel_Price', 'CPI','Unemployment', 'Quarter']
+predictor = ['Holiday_Flag', 'Temperature', 'Fuel_Price', 'CPI', 'Unemployment',
+             'Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4', 'Intercept']
 target    = ['Weekly_Sales']
 
-print("---------------------------------------------")
+print(data[predictor].columns)
+
+data_predictor = np.array(data[predictor])
+data_target    = np.array(data[target])
 
 # #----------------------------------------------------------------------------------------------------------
 # k-fold validation - equal stratum for categorical predictors (holiday flag, quarter)
+
+folds = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
+
+strata = data["Quarter"]
+
+for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
+    print("-------------------------------------------")
+    print(i)
+    x_train, x_test = data_predictor[train_index], data_predictor[test_index]
+    y_train, y_test = data_target[train_index],    data_target[test_index]
+
+    method.least_squared.reg(x_train, y_train, x_test, y_test)
 
 
 
@@ -46,19 +74,19 @@ print("---------------------------------------------")
 # method(train_predict, train_target, test_predict, test_target)
 
 # least_squared
-# return(dof, test_error, coefficient)
+# return(dof, train_error, test_error, coefficient)
 # row - dof: 1
 
 # all_subset
-# return(dof, test_error, coefficient)
+# return(dof, train_error, test_error, coefficient)
 # row - dof: 1, 2, .., num(predictor)
 
 # ridge, lasso
-# return(dof, test_error, coefficient)
+# return(dof, train_error, test_error, coefficient)
 # row - dof: discrete dof (step size tbd) (continuous?)
 
 # pcr
-# return(dof, test_error, coefficient)
+# return(dof, train_error, test_error, coefficient)
 # row - dof: 1, 2, .., num(predictor)
 
 
