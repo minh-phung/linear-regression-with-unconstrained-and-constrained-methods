@@ -107,16 +107,22 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #--------------------------------------------------
     # all_subset
-    start_index = i*row_count_each_fold
-    end_index   = (i+1)*row_count_each_fold
-    all_subset_result.iloc[start_index:end_index, 0] = np.full(row_count_each_fold, i)
-    all_subset_result.iloc[start_index:end_index, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    #start_index = i*row_count_each_fold
+    #end_index   = (i+1)*row_count_each_fold
+    #all_subset_result.iloc[start_index:end_index, 0] = np.full(row_count_each_fold, i)
+    #all_subset_result.iloc[start_index:end_index, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+
+    #--------------------------------------------------
+    # ridge
+    method.ridge.reg(x_train, y_train, x_test, y_test)
 
 
 print("-------------------------------------------")
 #print(least_squared_result)
-print(all_subset_result)
+#print(all_subset_result)
 
+
+'''
 print(all_subset_result[["dof", "train_error", "test_error"]])
 plt.scatter(all_subset_result["dof"], all_subset_result["train_error"],
             color = 'blue', alpha = 0.1, s = 1)
@@ -124,7 +130,7 @@ plt.scatter(all_subset_result["dof"], all_subset_result["train_error"],
 plt.scatter(all_subset_result["dof"], all_subset_result["test_error"],
             color = 'red' , alpha = 0.1, s = 1)
 plt.savefig("method_all_subset.png")
-
+'''
 #----------------------------------------------------------------------------------------------------------
 # match by dof, avg test_error - cv_error, avg_coef
 # compare them with table from page 82 - least dof within 1 sd of minimum per method (all except least_squared)
