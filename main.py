@@ -2,9 +2,6 @@ import pandas as pd
 import numpy as np
 import method
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 
 
 data = pd.read_csv("Walmart_Sales.csv").dropna()
@@ -43,29 +40,42 @@ data['Intercept'] = np.ones(data.shape[0])
 print(data.head())
 print(data.columns)
 
-predictor = ['Holiday_Flag', 'Temperature', 'Fuel_Price', 'CPI', 'Unemployment',
-             'Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4', 'Intercept']
-target    = ['Weekly_Sales']
+predictor = ['Intercept', 'Holiday_Flag', 'Temperature',
+             'Fuel_Price', 'CPI', 'Unemployment',
+             'Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4']
 
-print(data[predictor].columns)
+target    = ['Weekly_Sales']
 
 data_predictor = np.array(data[predictor])
 data_target    = np.array(data[target])
 
 # #----------------------------------------------------------------------------------------------------------
-# k-fold validation - equal stratum for categorical predictors (holiday flag, quarter)
+return_field = ["fold", "dof", "train_error", "test_error"]
+return_field = np.concatenate((return_field, predictor))
 
-folds = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
+# k-fold validation - equal stratum for categorical predictor (quarter)
+k = 5
 
+folds = StratifiedKFold(n_splits=k, shuffle=True, random_state=1)
 strata = data["Quarter"]
+
+#------------------------------------------------------------------------------------
+least_squared_result = pd.DataFrame(np.nan, index = range(k), columns= return_field)
+
+
 
 for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
     print("-------------------------------------------")
-    print(i)
+    print("fold ", i)
     x_train, x_test = data_predictor[train_index], data_predictor[test_index]
     y_train, y_test = data_target[train_index],    data_target[test_index]
 
-    method.least_squared.reg(x_train, y_train, x_test, y_test)
+    #least_squared_result.loc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
+    method.all_subset.reg(x_train, y_train, x_test, y_test)
+
+
+
+print("-------------------------------------------")
 
 
 
@@ -97,5 +107,4 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
 # plot dof vs cv_error for all method (with the chosen dof for each method)
 # select best model also by using least dof within 1 sd of minimum
-
 
