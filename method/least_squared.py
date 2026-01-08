@@ -8,10 +8,10 @@ def reg(x_train, y_train, x_test, y_test):
     regression = LinearRegression(fit_intercept=False).fit(x_train, y_train)
 
     y_hat_train = regression.predict(x_train)
-    train_error = sum(y_hat_train - y_train) / len(y_train)
+    train_error = sum((y_hat_train - y_train)**2) / len(y_train)
 
     y_hat_test = regression.predict(x_test)
-    test_error = sum(y_hat_test - y_test) / len(y_test)
+    test_error = sum((y_hat_test - y_test)**2) / len(y_test)
 
     dof = np.array([x_train.shape[1]])
     coef = (regression.coef_).flatten()

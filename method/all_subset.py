@@ -39,4 +39,6 @@ def reg(x_train, y_train, x_test, y_test):
 
     out = np.concatenate((out_other, out_coef), axis=1)
 
+    print(out.shape)
+
     return out
