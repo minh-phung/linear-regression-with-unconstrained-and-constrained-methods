@@ -1,5 +1,7 @@
 import numpy as np
 import sympy as sp
+from sklearn.linear_model import Ridge
+from method import least_squared
 
 # following 3.4.1 hastie et al
 # pdf page 83
@@ -12,9 +14,28 @@ def reg(x_train, y_train, x_test, y_test):
     for i in range(len(dof_val)):
         lambd_val[i] = lambd(D, dof_val[i])
 
-    print(np.vstack((dof_val, lambd_val)))
+    out = np.zeros((len(dof_val), x_train.shape[1]+3))
 
-    return
+
+    for i in range(len(dof_val)-1):
+        regression = Ridge(alpha = lambd_val[i], fit_intercept=False).fit(x_train, y_train)
+
+        y_hat_train = regression.predict(x_train).reshape(-1, 1)
+        train_error = sum((y_hat_train - y_train) ** 2) / len(y_train)
+
+        y_hat_test = regression.predict(x_test).reshape(-1, 1)
+        test_error = sum((y_hat_test - y_test) ** 2) / len(y_test)
+
+        out[i, 0]  = dof_val[i]
+        out[i, 1]  = train_error[0]
+        out[i, 2]  = test_error[0]
+        out[i, 3:] = regression.coef_.flatten()
+
+    # following scikit-learn recommendation: not using ridge(alpha = 0)
+    # and just use least square
+    out[-1] = least_squared.reg(x_train, y_train, x_test, y_test)
+
+    return out
 
 def lambd(D, dof):
 

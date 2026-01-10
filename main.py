@@ -83,7 +83,14 @@ for i in range(0, len(predictor)):
 all_subset_result = pd.DataFrame(np.nan, index = range(row_count_each_fold*k), columns= return_field)
 
 #-------------------------------------------
-# ridge, lasso
+# ridge
+# return(dof, train_error, test_error, coefficient)
+# row - dof: (1, 2, .., num(predictor) ) * k folds
+
+
+
+#-------------------------------------------
+# lasso
 # return(dof, train_error, test_error, coefficient)
 # row - dof: discrete dof (step size tbd) (continuous?)
 
@@ -103,7 +110,7 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #---------------------------------------------------
     # least_square
-    #least_squared_result.iloc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
+    least_squared_result.iloc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
 
     #--------------------------------------------------
     # all_subset
@@ -115,6 +122,7 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
     #--------------------------------------------------
     # ridge
     method.ridge.reg(x_train, y_train, x_test, y_test)
+
 
 
 print("-------------------------------------------")
