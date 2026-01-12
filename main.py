@@ -76,18 +76,19 @@ least_squared_result = pd.DataFrame(np.nan, index = range(k), columns= return_fi
 # all_subset
 # return(dof, train_error, test_error, coefficient)
 # row - dof: (1, 2, .., num(predictor) ) * k folds
-row_count_each_fold = 0
+row_count_each_fold_all_subset = 0
 for i in range(0, len(predictor)):
-    row_count_each_fold += math.comb(len(predictor), i)
+    row_count_each_fold_all_subset += math.comb(len(predictor), i)
 
-all_subset_result = pd.DataFrame(np.nan, index = range(row_count_each_fold*k), columns= return_field)
+all_subset_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_all_subset*k), columns= return_field)
 
 #-------------------------------------------
 # ridge
 # return(dof, train_error, test_error, coefficient)
 # row - dof: (1, 2, .., num(predictor) ) * k folds
+row_count_each_fold_ridge = len(predictor)
 
-
+ridge_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_ridge*k), columns= return_field)
 
 #-------------------------------------------
 # lasso
@@ -110,18 +111,23 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #---------------------------------------------------
     # least_square
-    least_squared_result.iloc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
+    #least_squared_result.iloc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
 
     #--------------------------------------------------
     # all_subset
-    #start_index = i*row_count_each_fold
-    #end_index   = (i+1)*row_count_each_fold
-    #all_subset_result.iloc[start_index:end_index, 0] = np.full(row_count_each_fold, i)
-    #all_subset_result.iloc[start_index:end_index, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    #start_index_all_subset = i*row_count_each_fold_all_subset
+    #end_index_all_subset   = (i+1)*row_count_each_fold_all_subset
+    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
+    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # ridge
-    method.ridge.reg(x_train, y_train, x_test, y_test)
+    start_index_ridge = i*row_count_each_fold_ridge
+    end_index_ridge   = (i+1)*row_count_each_fold_ridge
+    ridge_result.iloc[start_index_ridge:end_index_ridge, 0] = np.full(row_count_each_fold_ridge, i)
+    ridge_result.iloc[start_index_ridge:end_index_ridge, 1:] = method.ridge.reg(x_train, y_train, x_test, y_test)
+
+
 
 
 
