@@ -16,7 +16,6 @@ def reg(x_train, y_train, x_test, y_test):
 
     out = np.zeros((len(dof_val), x_train.shape[1]+3))
 
-
     for i in range(len(dof_val)-1):
         regression = Ridge(alpha = lambd_val[i], fit_intercept=False).fit(x_train, y_train)
 

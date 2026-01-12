@@ -3,6 +3,7 @@ import numpy as np
 import method
 from sklearn.model_selection import StratifiedKFold
 import math
+import miscellaneous
 
 import matplotlib
 matplotlib.use('Agg')
@@ -61,7 +62,7 @@ return_field = ["fold", "dof", "train_error", "test_error"]
 return_field = np.concatenate((return_field, predictor))
 
 # k-fold validation - equal stratum for categorical predictor (quarter)
-k = 5
+k = 2
 
 folds = StratifiedKFold(n_splits=k, shuffle=True, random_state=1)
 strata = data["Quarter"]
@@ -115,17 +116,17 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #--------------------------------------------------
     # all_subset
-    #start_index_all_subset = i*row_count_each_fold_all_subset
-    #end_index_all_subset   = (i+1)*row_count_each_fold_all_subset
-    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
-    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    start_index_all_subset = i*row_count_each_fold_all_subset
+    end_index_all_subset   = (i+1)*row_count_each_fold_all_subset
+    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
+    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # ridge
-    start_index_ridge = i*row_count_each_fold_ridge
-    end_index_ridge   = (i+1)*row_count_each_fold_ridge
-    ridge_result.iloc[start_index_ridge:end_index_ridge, 0] = np.full(row_count_each_fold_ridge, i)
-    ridge_result.iloc[start_index_ridge:end_index_ridge, 1:] = method.ridge.reg(x_train, y_train, x_test, y_test)
+    #start_index_ridge = i*row_count_each_fold_ridge
+    #end_index_ridge   = (i+1)*row_count_each_fold_ridge
+    #ridge_result.iloc[start_index_ridge:end_index_ridge, 0] = np.full(row_count_each_fold_ridge, i)
+    #ridge_result.iloc[start_index_ridge:end_index_ridge, 1:] = method.ridge.reg(x_train, y_train, x_test, y_test)
 
 
 
@@ -134,18 +135,46 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 print("-------------------------------------------")
 #print(least_squared_result)
 #print(all_subset_result)
+#print(ridge_result)
 
 
-'''
-print(all_subset_result[["dof", "train_error", "test_error"]])
-plt.scatter(all_subset_result["dof"], all_subset_result["train_error"],
-            color = 'blue', alpha = 0.1, s = 1)
-
-plt.scatter(all_subset_result["dof"], all_subset_result["test_error"],
-            color = 'red' , alpha = 0.1, s = 1)
-plt.savefig("method_all_subset.png")
-'''
 #----------------------------------------------------------------------------------------------------------
+# across folds, group by dof, search for minimum test_error
+
+# least squared
+# (not applicable)
+#--------------------------------------------------
+# all subset
+all_subset_grouped = all_subset_result.groupby("dof").apply(miscellaneous.min_test_error_all_subset)
+print(all_subset_grouped)
+
+#----------------------------------------------------------------------------------------------------------
+# search for dof within 1 degree of freedom of mininimum (of test error) (chosen dof per method)
+# plot test and train error as a function dof
+# grid chose dof vs test_error
+
+
+# least squared
+
+
+#--------------------------------------------------
+# all subset
+
+
+
+
+#--------------------------------------------------
+#--------------------------------------------------
+'''
+plt.ylim(0.2e12, 1.2e12)
+
+plt.errorbar(x, y, yerr=y_error,
+             fmt='-o', ecolor='r', capsize=3, markersize=3)
+
+plt.savefig("test.png")
+'''
+
+
 # match by dof, avg test_error - cv_error, avg_coef
 # compare them with table from page 82 - least dof within 1 sd of minimum per method (all except least_squared)
 
