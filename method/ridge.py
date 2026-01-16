@@ -5,6 +5,7 @@ from method import least_squared
 
 # following 3.4.1 hastie et al
 # pdf page 83
+# lambda (hastie) = alpha (scikit learn)
 def reg(x_train, y_train, x_test, y_test):
     U, D, Vh = np.linalg.svd(x_train)
 

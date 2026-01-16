@@ -3,7 +3,32 @@ import itertools as it
 from method import least_squared
 import math
 
-def reg(x_train, y_train, x_test, y_test):
+def reg (x_train, y_train, x_test, y_test):
+
+    n = np.shape(x_train)[1]
+
+    out = np.full((n, 3+n), np.nan)
+
+    for i in range(n):
+        smallest_test_row = np.full((3+i+1), np.inf)
+        smallest_test_coef_index = np.full((i+1), np.inf)
+
+        for each in list(it.combinations(range(n), i+1)):
+            reg_result = least_squared.reg(x_train[:, each],
+                                           y_train,
+                                           x_test[:, each],
+                                           y_test)
+            # least_squared.reg[2] is test_error
+            if smallest_test_row[2] > reg_result[2]:
+                smallest_test_row = reg_result
+                smallest_test_coef_index = each
+
+        out[i,0:3] = smallest_test_row[0:3]
+        out[i,3+np.array(smallest_test_coef_index)]  = smallest_test_row[3:]
+
+    return out
+
+def reg_full(x_train, y_train, x_test, y_test):
     #print("all subset")
 
     n = x_train.shape[1]

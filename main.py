@@ -62,7 +62,7 @@ return_field = ["fold", "dof", "train_error", "test_error"]
 return_field = np.concatenate((return_field, predictor))
 
 # k-fold validation - equal stratum for categorical predictor (quarter)
-k = 2
+k = 5
 
 folds = StratifiedKFold(n_splits=k, shuffle=True, random_state=1)
 strata = data["Quarter"]
@@ -77,9 +77,7 @@ least_squared_result = pd.DataFrame(np.nan, index = range(k), columns= return_fi
 # all_subset
 # return(dof, train_error, test_error, coefficient)
 # row - dof: (1, 2, .., num(predictor) ) * k folds
-row_count_each_fold_all_subset = 0
-for i in range(0, len(predictor)):
-    row_count_each_fold_all_subset += math.comb(len(predictor), i)
+row_count_each_fold_all_subset = len(predictor)
 
 all_subset_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_all_subset*k), columns= return_field)
 
@@ -93,8 +91,12 @@ ridge_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_ridge*k), 
 
 #-------------------------------------------
 # lasso
-# return(dof, train_error, test_error, coefficient)
-# row - dof: discrete dof (step size tbd) (continuous?)
+# return(lambda, train_error, test_error, coefficient)
+# row: between 0 and inf (choose linspace) - no clear dof
+return_field_lasso = ["fold", "lambda", "train_error", "test_error"]
+return_field = np.concatenate((return_field, predictor))
+
+lasso_const_val = np.linspace(0, 100, 10)
 
 #-------------------------------------------
 # pcr
@@ -116,10 +118,10 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #--------------------------------------------------
     # all_subset
-    start_index_all_subset = i*row_count_each_fold_all_subset
-    end_index_all_subset   = (i+1)*row_count_each_fold_all_subset
-    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
-    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    #start_index_all_subset = i*row_count_each_fold_ridge
+    #end_index_all_subset = (i+1)*row_count_each_fold_ridge
+    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
+    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # ridge
@@ -127,6 +129,10 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
     #end_index_ridge   = (i+1)*row_count_each_fold_ridge
     #ridge_result.iloc[start_index_ridge:end_index_ridge, 0] = np.full(row_count_each_fold_ridge, i)
     #ridge_result.iloc[start_index_ridge:end_index_ridge, 1:] = method.ridge.reg(x_train, y_train, x_test, y_test)
+
+    #--------------------------------------------------
+    # lasso
+    method.lasso.reg(x_train, y_train, x_test, y_test, lasso_const_val)
 
 
 
@@ -143,13 +149,18 @@ print("-------------------------------------------")
 
 # least squared
 # (not applicable)
+
 #--------------------------------------------------
 # all subset
-all_subset_grouped = all_subset_result.groupby("dof").apply(miscellaneous.min_test_error_all_subset)
-print(all_subset_grouped)
+#all_subset_grouped = all_subset_result.groupby("dof").agg(["mean", "std"])
+#print(all_subset_grouped)
+
+#--------------------------------------------------
+ridge_result_grouped = ridge_result.groupby("dof").agg(["mean", "std"])
+print(ridge_result_grouped)
 
 #----------------------------------------------------------------------------------------------------------
-# search for dof within 1 degree of freedom of mininimum (of test error) (chosen dof per method)
+# search for dof within 1 degree of freedom of minimum (of test error) (chosen dof per method)
 # plot test and train error as a function dof
 # grid chose dof vs test_error
 
@@ -165,14 +176,23 @@ print(all_subset_grouped)
 
 #--------------------------------------------------
 #--------------------------------------------------
-'''
-plt.ylim(0.2e12, 1.2e12)
+
+#'''
+
+data_plot = ridge_result_grouped
+
+x = data_plot.index
+y = data_plot["test_error","mean"]
+y_error = data_plot["test_error","std"]
+
+
+#plt.ylim(0.2e12, 1.2e12)
 
 plt.errorbar(x, y, yerr=y_error,
              fmt='-o', ecolor='r', capsize=3, markersize=3)
 
 plt.savefig("test.png")
-'''
+#'''
 
 
 # match by dof, avg test_error - cv_error, avg_coef
