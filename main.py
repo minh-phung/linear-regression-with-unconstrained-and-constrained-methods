@@ -4,7 +4,6 @@ import method
 from sklearn.model_selection import StratifiedKFold
 import math
 import miscellaneous
-
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -58,8 +57,8 @@ data_predictor = np.array(data[predictor])
 data_target    = np.array(data[target])
 
 # #----------------------------------------------------------------------------------------------------------
-return_field = ["fold", "dof", "train_error", "test_error"]
-return_field = np.concatenate((return_field, predictor))
+return_info = ["fold", "dof", "train_error", "test_error"]
+return_field = np.concatenate((return_info, predictor))
 
 # k-fold validation - equal stratum for categorical predictor (quarter)
 k = 5
@@ -71,7 +70,9 @@ strata = data["Quarter"]
 # least_squared
 # return(dof, train_error, test_error, coefficient)
 # row - dof: (1) * k folds
-least_squared_result = pd.DataFrame(np.nan, index = range(k), columns= return_field)
+least_squared_result = pd.DataFrame(np.nan,
+                                    index = range(k),
+                                    columns= return_field)
 
 #-------------------------------------------
 # all_subset
@@ -79,7 +80,9 @@ least_squared_result = pd.DataFrame(np.nan, index = range(k), columns= return_fi
 # row - dof: (1, 2, .., num(predictor) ) * k folds
 row_count_each_fold_all_subset = len(predictor)
 
-all_subset_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_all_subset*k), columns= return_field)
+all_subset_result = pd.DataFrame(np.nan,
+                                 index = range(row_count_each_fold_all_subset*k),
+                                 columns= return_field)
 
 #-------------------------------------------
 # ridge
@@ -87,16 +90,23 @@ all_subset_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_all_s
 # row - dof: (1, 2, .., num(predictor) ) * k folds
 row_count_each_fold_ridge = len(predictor)
 
-ridge_result = pd.DataFrame(np.nan, index = range(row_count_each_fold_ridge*k), columns= return_field)
+ridge_result = pd.DataFrame(np.nan,
+                            index = range(row_count_each_fold_ridge*k),
+                            columns= return_field)
 
 #-------------------------------------------
 # lasso
 # return(lambda, train_error, test_error, coefficient)
 # row: between 0 and inf (choose linspace) - no clear dof
-return_field_lasso = ["fold", "lambda", "train_error", "test_error"]
-return_field = np.concatenate((return_field, predictor))
+return_info_lasso = ["fold", "lambda", "train_error", "test_error"]
+return_field_lasso = np.concatenate((return_info_lasso, predictor))
 
-lasso_const_val = np.linspace(0, 100, 10)
+lasso_const_val = np.linspace(0, 1e12, 11)
+row_count_each_fold_lasso = len(lasso_const_val)
+
+lasso_result = pd.DataFrame(np.nan,
+                            index = range(row_count_each_fold_lasso*k),
+                            columns= return_field_lasso)
 
 #-------------------------------------------
 # pcr
@@ -132,8 +142,11 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #--------------------------------------------------
     # lasso
-    method.lasso.reg(x_train, y_train, x_test, y_test, lasso_const_val)
-
+    #start_index_lasso = i*row_count_each_fold_lasso
+    #end_index_lasso = (i+1)*row_count_each_fold_lasso
+    #lasso_result.iloc[start_index_lasso:end_index_lasso, 0] = np.full(row_count_each_fold_lasso, i)
+    #lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg(x_train, y_train, x_test, y_test, lasso_const_val)
+    method.lasso.reg1(x_train, y_train, x_test, y_test, lasso_const_val)
 
 
 
@@ -142,7 +155,7 @@ print("-------------------------------------------")
 #print(least_squared_result)
 #print(all_subset_result)
 #print(ridge_result)
-
+#print(lasso_result[["lambda","test_error"]])
 
 #----------------------------------------------------------------------------------------------------------
 # across folds, group by dof, search for minimum test_error
