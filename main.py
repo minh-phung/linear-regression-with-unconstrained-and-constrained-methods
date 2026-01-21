@@ -97,12 +97,12 @@ ridge_result = pd.DataFrame(np.nan,
 #-------------------------------------------
 # lasso
 # return(lambda, train_error, test_error, coefficient)
-# row: between 0 and inf (choose linspace) - no clear dof
-return_info_lasso = ["fold", "lambda", "train_error", "test_error"]
+# row: between 0 and 1 (choose linspace) for s value (definition 3.4.2 hastie et al)
+return_info_lasso = ["fold", "s_val", "train_error", "test_error"]
 return_field_lasso = np.concatenate((return_info_lasso, predictor))
 
-lasso_const_val = np.linspace(0, 1e12, 11)
-row_count_each_fold_lasso = len(lasso_const_val)
+lasso_s_val = np.linspace(0.1, 1, 10)
+row_count_each_fold_lasso = len(lasso_s_val)
 
 lasso_result = pd.DataFrame(np.nan,
                             index = range(row_count_each_fold_lasso*k),
@@ -146,7 +146,7 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
     #end_index_lasso = (i+1)*row_count_each_fold_lasso
     #lasso_result.iloc[start_index_lasso:end_index_lasso, 0] = np.full(row_count_each_fold_lasso, i)
     #lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg(x_train, y_train, x_test, y_test, lasso_const_val)
-    method.lasso.reg1(x_train, y_train, x_test, y_test, lasso_const_val)
+    method.lasso.reg_norm_ball(x_train, y_train, x_test, y_test, lasso_s_val)
 
 
 

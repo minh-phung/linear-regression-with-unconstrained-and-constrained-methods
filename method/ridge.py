@@ -11,7 +11,7 @@ def reg(x_train, y_train, x_test, y_test):
     U, D, Vh = np.linalg.svd(x_train)
 
     dof_val   = np.array(range(x_train.shape[1]))+1
-    lambd_val = np.zeros(dof_val.shape)
+    lambd_val = lambd(dof_val)
 
     for i in range(len(dof_val)):
         lambd_val[i] = lambd(D, dof_val[i])
