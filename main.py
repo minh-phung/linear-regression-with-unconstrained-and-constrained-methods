@@ -96,7 +96,7 @@ ridge_result = pd.DataFrame(np.nan,
 
 #-------------------------------------------
 # lasso
-# return(lambda, train_error, test_error, coefficient)
+# return(s_val, train_error, test_error, coefficient)
 # row: between 0 and 1 (choose linspace) for s value (definition 3.4.2 hastie et al)
 return_info_lasso = ["fold", "s_val", "train_error", "test_error"]
 return_field_lasso = np.concatenate((return_info_lasso, predictor))
@@ -109,7 +109,7 @@ lasso_result = pd.DataFrame(np.nan,
                             columns= return_field_lasso)
 
 #-------------------------------------------
-# pcr
+# partial least squared
 # return(dof, train_error, test_error, coefficient)
 # row - dof: 1, 2, .., num(predictor)
 
@@ -128,10 +128,10 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #--------------------------------------------------
     # all_subset
-    #start_index_all_subset = i*row_count_each_fold_ridge
-    #end_index_all_subset = (i+1)*row_count_each_fold_ridge
-    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
-    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    start_index_all_subset = i*row_count_each_fold_ridge
+    end_index_all_subset = (i+1)*row_count_each_fold_ridge
+    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
+    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # ridge
@@ -145,8 +145,7 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
     #start_index_lasso = i*row_count_each_fold_lasso
     #end_index_lasso = (i+1)*row_count_each_fold_lasso
     #lasso_result.iloc[start_index_lasso:end_index_lasso, 0] = np.full(row_count_each_fold_lasso, i)
-    #lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg(x_train, y_train, x_test, y_test, lasso_const_val)
-    method.lasso.reg_norm_ball(x_train, y_train, x_test, y_test, lasso_s_val)
+    #lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg_norm_ball(x_train, y_train, x_test, y_test, lasso_s_val)
 
 
 
@@ -155,7 +154,7 @@ print("-------------------------------------------")
 #print(least_squared_result)
 #print(all_subset_result)
 #print(ridge_result)
-#print(lasso_result[["lambda","test_error"]])
+#print(lasso_result)
 
 #----------------------------------------------------------------------------------------------------------
 # across folds, group by dof, search for minimum test_error
@@ -165,12 +164,21 @@ print("-------------------------------------------")
 
 #--------------------------------------------------
 # all subset
-#all_subset_grouped = all_subset_result.groupby("dof").agg(["mean", "std"])
-#print(all_subset_grouped)
+all_subset_grouped = all_subset_result.groupby("dof").agg(["mean", "std"])
+print("all subset")
+print(all_subset_grouped)
 
 #--------------------------------------------------
+# ridge
 ridge_result_grouped = ridge_result.groupby("dof").agg(["mean", "std"])
+print("ridge")
 print(ridge_result_grouped)
+
+#--------------------------------------------------
+# lasso
+lasso_result_grouped = lasso_result.groupby("s_val").agg(["mean", "std"])
+print("lasso")
+print(lasso_result_grouped)
 
 #----------------------------------------------------------------------------------------------------------
 # search for dof within 1 degree of freedom of minimum (of test error) (chosen dof per method)
@@ -192,11 +200,9 @@ print(ridge_result_grouped)
 
 #'''
 
-data_plot = ridge_result_grouped
-
-x = data_plot.index
-y = data_plot["test_error","mean"]
-y_error = data_plot["test_error","std"]
+x = all_subset_grouped.index
+y = all_subset_grouped["test_error","mean"]
+y_error = all_subset_grouped["test_error","std"]
 
 
 #plt.ylim(0.2e12, 1.2e12)
@@ -204,7 +210,7 @@ y_error = data_plot["test_error","std"]
 plt.errorbar(x, y, yerr=y_error,
              fmt='-o', ecolor='r', capsize=3, markersize=3)
 
-plt.savefig("test.png")
+plt.savefig("z_all_subset_test.png")
 #'''
 
 

@@ -1,5 +1,4 @@
 import numpy as np
-import sympy as sp
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression
 import cvxpy as cp
@@ -11,6 +10,8 @@ def reg_norm_ball (x_train, y_train, x_test, y_test, s_val):
 
     #print(x_train.shape)
     y_train = y_train.flatten()
+    y_test = y_test.flatten()
+
     t_0_val = t_0(x_train, y_train)
 
     t_val = s_val * t_0_val
@@ -22,13 +23,22 @@ def reg_norm_ball (x_train, y_train, x_test, y_test, s_val):
     objective = cp.Minimize(cp.sum_squares(x_train @ beta - y_train))
 
     for i in range(len(s_val)):
-        constraint = [cp.norm1(beta) <= t_val[i]]
-        prob = cp.Problem(objective, constraint)
-        prob.solve(solver=cp.OSQP, verbose=False)
-        print(s_val[i])
-        print(beta.value)
+            constraint = [cp.norm1(beta) <= t_val[i]]
+            prob = cp.Problem(objective, constraint)
+            prob.solve(solver=cp.OSQP, verbose=False)
 
-    return
+            y_hat_train = x_train @ beta.value
+            train_error = sum((y_hat_train - y_train) ** 2) / len(y_train)
+
+            y_hat_test  = x_test  @ beta.value
+            test_error = sum((y_hat_test - y_test) ** 2) / len(y_test)
+
+            out[i, 0] = s_val[i]
+            out[i, 1] = train_error
+            out[i, 2] = test_error
+            out[i, 3:] = beta.value
+
+    return out
 
 def t_0 (x_train, y_train):
     # pdf page 88 hastie et al
