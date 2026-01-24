@@ -5,15 +5,15 @@ import math
 
 def reg (x_train, y_train, x_test, y_test):
 
-    n = np.shape(x_train)[1]
+    p = np.shape(x_train)[1]
 
-    out = np.full((n, 3+n), np.nan)
+    out = np.full((p, 3+p), np.nan, dtype=float)
 
-    for i in range(n):
+    for i in range(p):
         smallest_test_row = np.full((3+i+1), np.inf)
         smallest_test_coef_index = np.full((i+1), np.inf)
 
-        for each in list(it.combinations(range(n), i+1)):
+        for each in list(it.combinations(range(p), i+1)):
             reg_result = least_squared.reg(x_train[:, each],
                                            y_train,
                                            x_test[:, each],

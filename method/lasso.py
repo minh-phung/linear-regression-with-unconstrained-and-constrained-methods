@@ -16,7 +16,7 @@ def reg_norm_ball (x_train, y_train, x_test, y_test, s_val):
 
     t_val = s_val * t_0_val
 
-    out = np.zeros((len(s_val), x_train.shape[1] + 3))
+    out = np.zeros((len(s_val), x_train.shape[1] + 3), dtype=float)
 
     p = x_train.shape[1]
     beta = cp.Variable(p)

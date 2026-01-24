@@ -16,7 +16,7 @@ def reg(x_train, y_train, x_test, y_test):
     for i in range(len(dof_val)):
         lambd_val[i] = lambd(D, dof_val[i])
 
-    out = np.zeros((len(dof_val), x_train.shape[1]+3))
+    out = np.zeros((len(dof_val), x_train.shape[1]+3), dtype=float)
 
     for i in range(len(dof_val)):
         if dof_val[i] == 0:

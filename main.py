@@ -112,6 +112,11 @@ lasso_result = pd.DataFrame(np.nan,
 # partial least squared
 # return(dof, train_error, test_error, coefficient)
 # row - dof: 1, 2, .., num(predictor)
+row_count_each_fold_pls = len(predictor)
+
+pls_result = pd.DataFrame(np.nan,
+                          index = range(row_count_each_fold_pls*k),
+                          columns = return_field)
 
 #----------------------------------------------------------------------------------------------------------
 # for each k-fold
@@ -128,10 +133,10 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #--------------------------------------------------
     # all_subset
-    start_index_all_subset = i*row_count_each_fold_ridge
-    end_index_all_subset = (i+1)*row_count_each_fold_ridge
-    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
-    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    #start_index_all_subset = i*row_count_each_fold_ridge
+    #end_index_all_subset   = (i+1)*row_count_each_fold_ridge
+    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
+    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # ridge
@@ -143,11 +148,16 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
     #--------------------------------------------------
     # lasso
     #start_index_lasso = i*row_count_each_fold_lasso
-    #end_index_lasso = (i+1)*row_count_each_fold_lasso
+    #end_index_lasso   = (i+1)*row_count_each_fold_lasso
     #lasso_result.iloc[start_index_lasso:end_index_lasso, 0] = np.full(row_count_each_fold_lasso, i)
     #lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg_norm_ball(x_train, y_train, x_test, y_test, lasso_s_val)
 
-
+    #--------------------------------------------------
+    # pls
+    start_index_pls = i*row_count_each_fold_pls
+    end_index_pls   = (i+1)*row_count_each_fold_pls
+    pls_result.iloc[start_index_pls:end_index_pls, 0] = np.full(row_count_each_fold_pls, i)
+    pls_result.iloc[start_index_pls:end_index_pls, 1:] = method.pls.reg(x_train, y_train, x_test, y_test)
 
 
 print("-------------------------------------------")
@@ -180,6 +190,13 @@ lasso_result_grouped = lasso_result.groupby("s_val").agg(["mean", "std"])
 print("lasso")
 print(lasso_result_grouped)
 
+#--------------------------------------------------
+# pls
+pls_result_grouped = pls_result.groupby("dof").agg(["mean", "std"])
+print("pls")
+print(pls_result_grouped)
+pls_result_grouped_filtered = pls_result_grouped.iloc[pls_result_grouped.index <= 7]
+
 #----------------------------------------------------------------------------------------------------------
 # search for dof within 1 degree of freedom of minimum (of test error) (chosen dof per method)
 # plot test and train error as a function dof
@@ -198,11 +215,11 @@ print(lasso_result_grouped)
 #--------------------------------------------------
 #--------------------------------------------------
 
-#'''
 
-x = all_subset_grouped.index
-y = all_subset_grouped["test_error","mean"]
-y_error = all_subset_grouped["test_error","std"]
+
+x = pls_result_grouped_filtered.index
+y = pls_result_grouped_filtered["test_error","mean"]
+y_error = pls_result_grouped_filtered["test_error","std"]
 
 
 #plt.ylim(0.2e12, 1.2e12)
@@ -210,8 +227,8 @@ y_error = all_subset_grouped["test_error","std"]
 plt.errorbar(x, y, yerr=y_error,
              fmt='-o', ecolor='r', capsize=3, markersize=3)
 
-plt.savefig("z_all_subset_test.png")
-#'''
+plt.savefig("z_pls_filtered_test.png")
+
 
 
 # match by dof, avg test_error - cv_error, avg_coef
