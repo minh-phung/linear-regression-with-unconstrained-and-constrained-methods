@@ -129,28 +129,28 @@ for i, (train_index, test_index) in enumerate(folds.split(data, strata)):
 
     #---------------------------------------------------
     # least_square
-    #least_squared_result.iloc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
+    least_squared_result.iloc[i] = np.append(i, method.least_squared.reg(x_train, y_train, x_test, y_test))
 
     #--------------------------------------------------
     # all_subset
-    #start_index_all_subset = i*row_count_each_fold_ridge
-    #end_index_all_subset   = (i+1)*row_count_each_fold_ridge
-    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
-    #all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
+    start_index_all_subset = i*row_count_each_fold_ridge
+    end_index_all_subset   = (i+1)*row_count_each_fold_ridge
+    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 0] = np.full(row_count_each_fold_all_subset, i)
+    all_subset_result.iloc[start_index_all_subset:end_index_all_subset, 1:] = method.all_subset.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # ridge
-    #start_index_ridge = i*row_count_each_fold_ridge
-    #end_index_ridge   = (i+1)*row_count_each_fold_ridge
-    #ridge_result.iloc[start_index_ridge:end_index_ridge, 0] = np.full(row_count_each_fold_ridge, i)
-    #ridge_result.iloc[start_index_ridge:end_index_ridge, 1:] = method.ridge.reg(x_train, y_train, x_test, y_test)
+    start_index_ridge = i*row_count_each_fold_ridge
+    end_index_ridge   = (i+1)*row_count_each_fold_ridge
+    ridge_result.iloc[start_index_ridge:end_index_ridge, 0] = np.full(row_count_each_fold_ridge, i)
+    ridge_result.iloc[start_index_ridge:end_index_ridge, 1:] = method.ridge.reg(x_train, y_train, x_test, y_test)
 
     #--------------------------------------------------
     # lasso
-    #start_index_lasso = i*row_count_each_fold_lasso
-    #end_index_lasso   = (i+1)*row_count_each_fold_lasso
-    #lasso_result.iloc[start_index_lasso:end_index_lasso, 0] = np.full(row_count_each_fold_lasso, i)
-    #lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg_norm_ball(x_train, y_train, x_test, y_test, lasso_s_val)
+    start_index_lasso = i*row_count_each_fold_lasso
+    end_index_lasso   = (i+1)*row_count_each_fold_lasso
+    lasso_result.iloc[start_index_lasso:end_index_lasso, 0] = np.full(row_count_each_fold_lasso, i)
+    lasso_result.iloc[start_index_lasso:end_index_lasso, 1:] = method.lasso.reg_norm_ball(x_train, y_train, x_test, y_test, lasso_s_val)
 
     #--------------------------------------------------
     # pls
@@ -168,31 +168,41 @@ print("-------------------------------------------")
 
 #----------------------------------------------------------------------------------------------------------
 # across folds, group by dof, search for minimum test_error
+print("-------------------------------------------")
+print("grouping - mean and std")
 
+#--------------------------------------------------
 # least squared
-# (not applicable)
+least_squared_grouped = least_squared_result.groupby("dof").agg(["mean", "std"])
+least_squared_grouped.drop(columns=["fold"], inplace=True)
+print("least squared")
+print(least_squared_grouped)
 
 #--------------------------------------------------
 # all subset
 all_subset_grouped = all_subset_result.groupby("dof").agg(["mean", "std"])
+all_subset_grouped.drop(columns=["fold"], inplace=True)
 print("all subset")
 print(all_subset_grouped)
 
 #--------------------------------------------------
 # ridge
 ridge_result_grouped = ridge_result.groupby("dof").agg(["mean", "std"])
+ridge_result_grouped.drop(columns=["fold"], inplace=True)
 print("ridge")
 print(ridge_result_grouped)
 
 #--------------------------------------------------
 # lasso
 lasso_result_grouped = lasso_result.groupby("s_val").agg(["mean", "std"])
+lasso_result_grouped.drop(columns=["fold"], inplace=True)
 print("lasso")
 print(lasso_result_grouped)
 
 #--------------------------------------------------
 # pls
 pls_result_grouped = pls_result.groupby("dof").agg(["mean", "std"])
+pls_result_grouped.drop(columns=["fold"], inplace=True)
 print("pls")
 print(pls_result_grouped)
 pls_result_grouped_filtered = pls_result_grouped.iloc[pls_result_grouped.index <= 7]
@@ -201,26 +211,30 @@ pls_result_grouped_filtered = pls_result_grouped.iloc[pls_result_grouped.index <
 # search for dof within 1 degree of freedom of minimum (of test error) (chosen dof per method)
 # plot test and train error as a function dof
 # grid chose dof vs test_error
+print("-------------------------------------------")
+print("choose dof per method")
 
+least_squared_chosen = miscellaneous.within_1_std_of_min(least_squared_grouped)
+least_squared_chosen["method"] = ["least_squared"]
 
-# least squared
+all_subset_chosen = miscellaneous.within_1_std_of_min(all_subset_grouped)
+all_subset_chosen["method"] = ["all_subset"]
 
+ridge_chosen = miscellaneous.within_1_std_of_min(ridge_result_grouped)
+ridge_chosen["method"] = ["ridge"]
 
+lasso_chosen = miscellaneous.within_1_std_of_min(lasso_result_grouped)
+lasso_chosen["method"] = ["lasso"]
+
+pls_chosen = miscellaneous.within_1_std_of_min(pls_result_grouped)
+pls_chosen["method"] = ["pls"]
 #--------------------------------------------------
-# all subset
-
-
-
-
-#--------------------------------------------------
 #--------------------------------------------------
 
-
-
+'''
 x = pls_result_grouped_filtered.index
 y = pls_result_grouped_filtered["test_error","mean"]
 y_error = pls_result_grouped_filtered["test_error","std"]
-
 
 #plt.ylim(0.2e12, 1.2e12)
 
@@ -228,13 +242,14 @@ plt.errorbar(x, y, yerr=y_error,
              fmt='-o', ecolor='r', capsize=3, markersize=3)
 
 plt.savefig("z_pls_filtered_test.png")
+'''
 
+comparison = pd.concat([least_squared_chosen,
+                        all_subset_chosen,
+                        ridge_chosen,
+                        lasso_chosen,
+                        pls_chosen], axis=0)
+comparison.to_csv("result.csv")
 
-
-# match by dof, avg test_error - cv_error, avg_coef
-# compare them with table from page 82 - least dof within 1 sd of minimum per method (all except least_squared)
-
-
-# plot dof vs cv_error for all method (with the chosen dof for each method)
-# select best model also by using least dof within 1 sd of minimum
+print(miscellaneous.within_1_std_of_min(comparison))
 

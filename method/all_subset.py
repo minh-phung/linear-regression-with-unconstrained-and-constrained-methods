@@ -7,7 +7,7 @@ def reg (x_train, y_train, x_test, y_test):
 
     p = np.shape(x_train)[1]
 
-    out = np.full((p, 3+p), np.nan, dtype=float)
+    out = np.full((p, 3+p), 0, dtype=float)
 
     for i in range(p):
         smallest_test_row = np.full((3+i+1), np.inf)
