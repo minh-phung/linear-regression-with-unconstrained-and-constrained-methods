@@ -2,11 +2,10 @@ Predict weekly Walmart sales data (https://www.kaggle.com/datasets/mikhail1681/w
 
 ordinary least squared, all subset: scikit-learn/sklearn.linear_model.LinearRegression  
 ridge: scikit-learn/sklearn.linear_model.Ridge, sympy (polynomial solver for conversion between dof and constraint coefficient)  
-lasso: scikit-learn/sklearn.linear_model.Lasso, cvxpy (quadratic convexity solver for conversion between dof and constraint coefficient)  
+lasso: cvxpy (quadratic convexity solver to have solution in norm-ball form)  
 partial least squared: scikit-learn/cross_decomposition.PLSRegression  
 
-Predictors were identitified to be 'Holiday_Flag', 'Temperature', 'Fuel_Price', 'CPI', 'Unemployment', each quarters, and intercept term. A k = 5 folds cross validation methods where chosen. Each methods were computed
-on each fold, as a function of the effective degree of freedom (dof). Averages and standard deviation across folds were computed.  
+Predictors were identitified to be 'Holiday_Flag', 'Temperature', 'Fuel_Price', 'CPI', 'Unemployment', each quarters, and intercept term. A k = 5 folds cross validation methods where chosen. Each methods were computed on each fold, as a function of the effective degree of freedom (dof). Averages and standard deviation across folds were computed.  
 
 The best dof, per methods, were chosen to be within 1 standard deviation of the minimum test error. A list of the chosen dof per method is saved in result.csv  
 
