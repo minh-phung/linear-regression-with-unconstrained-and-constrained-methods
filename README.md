@@ -12,3 +12,5 @@ The best dof, per methods, were chosen to be within 1 standard deviation of the 
 The best method overal were chosen to be within 1 standard deviation of the minimum test error, across all chosen dof per method: Lasso, with a s-value of 0.3.  
 
 References: Hastie et al, Elements of Statistical Learning, 2009.
+
+Note: given that the data is time-series, a more appropriate choice for cross validation would be rolling-cross validation, in order to avoid data leakage.
